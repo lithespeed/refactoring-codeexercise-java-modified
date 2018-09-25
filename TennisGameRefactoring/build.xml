@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<project name="TennisGameRefactoring" default="test" basedir=".">
+  <property environment="env"/>
+  <property name="src" value="./src"/>
+  <property name="lib.dir" value="./lib"/>
+  <property name="output" value="${basedir}/out"/>
+  <property name="jdk.home" value="${env.JAVA_HOME}"/>
+  <property name="jars" value="${lib.dir}"/>
+
+  <path id="junit.classpath">
+    <pathelement location="${lib.dir}/junit-4.10.jar"/>
+  </path>
+
+  <path id="compiled.src.classpath">
+    <pathelement location="${output}/src"/>
+  </path>
+
+  <path id="compiled.test.classpath">
+    <pathelement location="${output}/src"/>
+  </path>
+
+  <path id="src.classpath">
+    <pathelement location="${src}/main"/>
+  </path>
+
+  <path id="test.classpath">
+    <pathelement location="${src}/test"/>
+  </path>
+
+  <path id="res.classpath">
+    <pathelement location="${src}/test/resources"/>
+  </path>
+
+  <path id="jdk.classpath">
+    <fileset dir="${jdk.home}">
+      <include name="jre7/lib/*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="classpath">
+    <path id="classpath">
+      <fileset dir="${jars}">
+        <include name="**/*.jar"/>
+      </fileset>
+      <pathelement location="${output}/src/main"/>
+      <pathelement location="${output}/src/test"/>
+    </path>
+  </target>
+
+  <target name="clean">
+    <delete dir="${output}"/>
+  </target>
+
+  <target name="create" depends="clean">
+    <echo message="JAVA_HOME=${jdk.home}"/>
+    <mkdir dir="${output}"/>
+    <mkdir dir="${output}/src/main"/>
+    <mkdir dir="${output}/src/test"/>
+  </target>
+
+  <target name="compile" depends="create,classpath">
+    <javac destdir="${output}/src/main" debug="true" executable="${jdk.home}/bin/javac" classpathref="classpath" includeantruntime="false">
+      <classpath refid="jdk.classpath"/>
+      <src path="${src}/main"/>
+    </javac>
+  </target>
+
+  <target name="compile-test" depends="classpath,compile">
+    <javac destdir="${output}/src/test" debug="true" classpathref="classpath" includeantruntime="false">
+      <src path="${src}/test"/>
+      <classpath refid="jdk.classpath"/>
+      <classpath refid="junit.classpath"/>
+      <classpath refid="src.classpath"/>
+      <classpath refid="test.classpath"/>
+      <classpath refid="compiled.src.classpath"/>
+      <classpath refid="compiled.test.classpath"/>
+    </javac>
+  </target>
+
+  <target name="test" depends="compile-test" description="Run all tests">
+    <junit printsummary="yes" failureproperty="tests.failed">
+      <classpath refid="classpath"/>
+      <classpath refid="jdk.classpath"/>
+      <classpath refid="junit.classpath"/>
+      <classpath refid="src.classpath"/>
+      <classpath refid="test.classpath"/>
+      <classpath refid="compiled.src.classpath"/>
+      <classpath refid="compiled.test.classpath"/>
+      <batchtest>
+        <fileset dir="${src}">
+          <include name="test/java/*Test.java"/>
+        </fileset>
+        <formatter type="plain" usefile="false"/>
+      </batchtest>
+    </junit>
+    <fail if="tests.failed"/>
+  </target>
+
+</project>
